@@ -1,0 +1,34 @@
+﻿[
+  {
+    "name": ".NET Developers",
+    "description": "A group for people interested in .NET development.",
+    "location": "Chicago, IL",
+    "meets": [
+      {
+        "name": "Intro to C# ",
+        "description": "Overview of the C# language",
+        "location": "20 North Wacker Dr., Chicago, IL 60606",
+        "DateOfMeet": "2017-10-01T09:41:06.2350193Z"
+      }
+    ]
+  },
+  {
+    "name": "Tennis League",
+    "description": "Tennis players of all ages and skill levels welcome.",
+    "location": "Chicago, IL",
+    "meets": [
+      {
+        "name": "Davis Cup Outing",
+        "description": "Join us to support the USA Davis Cup team against Slovakia",
+        "location": "Hoffman Estates, IL",
+        "DateOfMeet": "2014-09-21T09:41:06.2350314Z"
+      },
+      {
+        "name": "Midwest Regional Tournament",
+        "description": "Level 5.0 regionals",
+        "location": "Northbrook, IL",
+        "DateOfMeet": "2017-11-21T09:41:06.2350332Z"
+      }
+    ]
+  }
+]

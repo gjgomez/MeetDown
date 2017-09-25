@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26906.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetDown.Events.Core", "MeetDown.Events.Core\MeetDown.Events.Core.csproj", "{C0AF4CAA-651A-4986-9C64-5EA3922AD568}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetDown.Events.Infrastructure", "MeetDown.Events.Infrastructure\MeetDown.Events.Infrastructure.csproj", "{58B19AC9-86E0-49C9-8969-42BA0B765501}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetDown.Events.API", "MeetDown.Events.API\MeetDown.Events.API.csproj", "{59DB2FF0-13C1-4541-92D8-72EA58D9AC1F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C0AF4CAA-651A-4986-9C64-5EA3922AD568}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C0AF4CAA-651A-4986-9C64-5EA3922AD568}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C0AF4CAA-651A-4986-9C64-5EA3922AD568}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C0AF4CAA-651A-4986-9C64-5EA3922AD568}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58B19AC9-86E0-49C9-8969-42BA0B765501}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58B19AC9-86E0-49C9-8969-42BA0B765501}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58B19AC9-86E0-49C9-8969-42BA0B765501}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58B19AC9-86E0-49C9-8969-42BA0B765501}.Release|Any CPU.Build.0 = Release|Any CPU
+		{59DB2FF0-13C1-4541-92D8-72EA58D9AC1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59DB2FF0-13C1-4541-92D8-72EA58D9AC1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59DB2FF0-13C1-4541-92D8-72EA58D9AC1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59DB2FF0-13C1-4541-92D8-72EA58D9AC1F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {80AFB082-3E41-4A74-8FC3-488FDE349B98}
+	EndGlobalSection
+EndGlobal
