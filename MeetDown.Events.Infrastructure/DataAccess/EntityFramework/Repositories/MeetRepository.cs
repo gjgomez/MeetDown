@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.EntityFrameworkCore;
 
 namespace MeetDown.Events.Infrastructure.DataAccess.EntityFramework.Repositories
 {
@@ -14,16 +16,30 @@ namespace MeetDown.Events.Infrastructure.DataAccess.EntityFramework.Repositories
     {
         private readonly MeetDbContext _meetDbContext;
         private readonly BaseRepository _baseRepository;
+        private readonly IMemoryCache _cache;
 
-        public MeetRepository(IConfiguration configuration)
+        public MeetRepository(IConfiguration configuration, IMemoryCache cache)
         {
             _meetDbContext = new MeetDbContext(configuration);
             _baseRepository = new BaseRepository(_meetDbContext);
+            _cache = cache;
         }
 
         public IEnumerable<Group> GetGroups()
         {
-            return _baseRepository.GetAll<Group, Group>(projection: x => x);
+            IEnumerable<Group> groups;
+
+            if (!_cache.TryGetValue(CacheKey.GetGroups, out groups))
+            {
+                // not in cache, so get from DB
+                groups = _baseRepository.GetAll<Group, Group>(projection: x => x);
+                _cache.Set(CacheKey.GetGroups, groups, new MemoryCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+                });
+            }
+
+            return groups;
         }
 
         public PagedList<Group> GetGroups(int pageNumber, int pageSize, IEnumerable<ISortCriterion<Group>> sortCriteria)
@@ -96,7 +112,19 @@ namespace MeetDown.Events.Infrastructure.DataAccess.EntityFramework.Repositories
 
         public bool Save()
         {
-            return _meetDbContext.SaveChanges() > 0;
+            //var groupEntitiesModified = _meetDbContext.ChangeTracker.Entries<Group>().Any(e =>
+            //    e.State == EntityState.Added ||
+            //    e.State == EntityState.Modified ||
+            //    e.State == EntityState.Deleted);
+
+            var changesSaved = _meetDbContext.SaveChanges() > 0;
+
+            //if (groupEntitiesModified && changesSaved)
+            //{
+            //    _cache.Remove(CacheKey.GetGroups);
+            //}
+
+            return changesSaved;
         }
 
     }

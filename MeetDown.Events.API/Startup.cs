@@ -21,6 +21,7 @@ namespace MeetDown.Events.API
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddMemoryCache();
             services.AddMvc();
 
             services.AddSingleton<IDbMigrator, DbMigrator>();
