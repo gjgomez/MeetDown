@@ -2,13 +2,15 @@
 using MeetDown.Events.Core.DataAccess.Repositories;
 using MeetDown.Events.Core.Entities;
 using MeetDown.Events.Infrastructure.DataAccess.Repositories;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 using System.Linq;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace MeetDown.Events.Infrastructure.DataAccess.EntityFramework.Repositories
 {
@@ -16,27 +18,42 @@ namespace MeetDown.Events.Infrastructure.DataAccess.EntityFramework.Repositories
     {
         private readonly MeetDbContext _meetDbContext;
         private readonly BaseRepository _baseRepository;
-        private readonly IMemoryCache _cache;
+        private readonly IDistributedCache _cacheStore;
+        private readonly bool _cacheEnabled;
 
-        public MeetRepository(IConfiguration configuration, IMemoryCache cache)
+        public MeetRepository(IConfiguration configuration, IDistributedCache cache)
         {
             _meetDbContext = new MeetDbContext(configuration);
             _baseRepository = new BaseRepository(_meetDbContext);
-            _cache = cache;
+            _cacheStore = cache;
+            _cacheEnabled = bool.Parse(configuration["DistributedCache:Enabled"]);
         }
 
         public IEnumerable<Group> GetGroups()
         {
             IEnumerable<Group> groups;
 
-            if (!_cache.TryGetValue(CacheKey.GetGroups, out groups))
+            if (_cacheEnabled)
             {
-                // not in cache, so get from DB
-                groups = _baseRepository.GetAll<Group, Group>(projection: x => x);
-                _cache.Set(CacheKey.GetGroups, groups, new MemoryCacheEntryOptions
+                var cacheJson = _cacheStore.GetString(CacheKey.GetGroups.ToString());
+
+                if (string.IsNullOrWhiteSpace(cacheJson))
                 {
-                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
-                });
+                    // not in cache, so get from DB
+                    groups = _baseRepository.GetAll<Group, Group>(projection: x => x);
+                    _cacheStore.SetString(CacheKey.GetGroups.ToString(), JsonConvert.SerializeObject(groups), new DistributedCacheEntryOptions
+                    {
+                        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
+                    });
+                }
+                else
+                {
+                    groups = JsonConvert.DeserializeObject<IEnumerable<Group>>(cacheJson);
+                }
+            }
+            else
+            {
+                groups = _baseRepository.GetAll<Group, Group>(projection: x => x);
             }
 
             return groups;
@@ -113,19 +130,18 @@ namespace MeetDown.Events.Infrastructure.DataAccess.EntityFramework.Repositories
         public bool Save()
         {
             var groupEntitiesModified = _meetDbContext.ChangeTracker.Entries<Group>().Any(e =>
-                e.State == EntityState.Added ||
-                e.State == EntityState.Modified ||
-                e.State == EntityState.Deleted);
+                    e.State == EntityState.Added ||
+                    e.State == EntityState.Modified ||
+                    e.State == EntityState.Deleted);
 
             var changesSaved = _meetDbContext.SaveChanges() > 0;
 
-            if (groupEntitiesModified && changesSaved)
+            if (_cacheEnabled && groupEntitiesModified && changesSaved)
             {
-                _cache.Remove(CacheKey.GetGroups);
+                _cacheStore.Remove(CacheKey.GetGroups.ToString());
             }
 
             return changesSaved;
         }
-
     }
 }

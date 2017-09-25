@@ -21,7 +21,11 @@ namespace MeetDown.Events.API
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMemoryCache();
+            services.AddDistributedRedisCache(options =>
+            {
+                options.Configuration = Configuration["DistributedCache:Redis:ConnectionString"];
+            });
+
             services.AddMvc();
 
             services.AddSingleton<IDbMigrator, DbMigrator>();
@@ -55,7 +59,8 @@ namespace MeetDown.Events.API
             }
 
             // setup auto-mapper configuration
-            Mapper.Initialize(config => {
+            Mapper.Initialize(config =>
+            {
                 config.CreateMap<Core.Entities.Group, ViewModels.Groups.ReadViewModel>();
                 config.CreateMap<Core.Entities.Group, ViewModels.Groups.UpdateViewModel>();
                 config.CreateMap<Core.Entities.Meet, ViewModels.Meets.ReadViewModel>();
