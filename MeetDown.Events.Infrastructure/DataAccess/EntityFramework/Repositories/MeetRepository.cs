@@ -35,7 +35,7 @@ namespace MeetDown.Events.Infrastructure.DataAccess.EntityFramework.Repositories
                 groups = _baseRepository.GetAll<Group, Group>(projection: x => x);
                 _cache.Set(CacheKey.GetGroups, groups, new MemoryCacheEntryOptions
                 {
-                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
                 });
             }
 
@@ -112,17 +112,17 @@ namespace MeetDown.Events.Infrastructure.DataAccess.EntityFramework.Repositories
 
         public bool Save()
         {
-            //var groupEntitiesModified = _meetDbContext.ChangeTracker.Entries<Group>().Any(e =>
-            //    e.State == EntityState.Added ||
-            //    e.State == EntityState.Modified ||
-            //    e.State == EntityState.Deleted);
+            var groupEntitiesModified = _meetDbContext.ChangeTracker.Entries<Group>().Any(e =>
+                e.State == EntityState.Added ||
+                e.State == EntityState.Modified ||
+                e.State == EntityState.Deleted);
 
             var changesSaved = _meetDbContext.SaveChanges() > 0;
 
-            //if (groupEntitiesModified && changesSaved)
-            //{
-            //    _cache.Remove(CacheKey.GetGroups);
-            //}
+            if (groupEntitiesModified && changesSaved)
+            {
+                _cache.Remove(CacheKey.GetGroups);
+            }
 
             return changesSaved;
         }
