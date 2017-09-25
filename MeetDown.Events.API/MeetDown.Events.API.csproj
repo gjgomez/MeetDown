@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,7 +12,9 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="6.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="2.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Redis" Version="2.0.0" />
   </ItemGroup>
 
   <ItemGroup>
