@@ -3,11 +3,18 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26906.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetDown.Events.Core", "MeetDown.Events.Core\MeetDown.Events.Core.csproj", "{C0AF4CAA-651A-4986-9C64-5EA3922AD568}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MeetDown.Events.Core", "MeetDown.Events.Core\MeetDown.Events.Core.csproj", "{C0AF4CAA-651A-4986-9C64-5EA3922AD568}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetDown.Events.Infrastructure", "MeetDown.Events.Infrastructure\MeetDown.Events.Infrastructure.csproj", "{58B19AC9-86E0-49C9-8969-42BA0B765501}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MeetDown.Events.Infrastructure", "MeetDown.Events.Infrastructure\MeetDown.Events.Infrastructure.csproj", "{58B19AC9-86E0-49C9-8969-42BA0B765501}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetDown.Events.API", "MeetDown.Events.API\MeetDown.Events.API.csproj", "{59DB2FF0-13C1-4541-92D8-72EA58D9AC1F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MeetDown.Events.API", "MeetDown.Events.API\MeetDown.Events.API.csproj", "{59DB2FF0-13C1-4541-92D8-72EA58D9AC1F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Deployment", "Deployment", "{34F84022-985A-4F62-900D-34F48C2B08DF}"
+	ProjectSection(SolutionItems) = preProject
+		Deployment\deploy.ps1 = Deployment\deploy.ps1
+		Deployment\parameters.staging.json = Deployment\parameters.staging.json
+		Deployment\template.json = Deployment\template.json
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

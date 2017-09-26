@@ -1,0 +1,51 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {    
+    "meetdown_redis_eastus_name": {
+      "value": "meetdown-redis-stg-eastus"
+    },
+    "meetdown_serverfarms_serviceplan_westeu_name": {
+      "value": "meetdown-svcplan-stg-westeu"
+    },
+    "meetdown_serverfarms_serviceplan_eastus_name": {
+      "value": "meetdown-svcplan-stg-eastus"
+    },
+    "meetdown_servers_sqlserver_eastus_name": {
+      "value": "meetdown-sqlserver-stg-eastus"
+    },
+    "meetdown_vaults_keyvault_eastus_name": {
+      "value": "meetdown-kv-stg-eastus"
+    },
+    "meetdown_sites_events_api_westeu_name": {
+      "value": "meetdown-events-api-stg-westeu"
+    },
+    "meetdown_sites_events_api_eastus_name": {
+      "value": "meetdown-events-api-stg-eastus"
+    },
+    "meetdown_autoscalesettings_name": {
+      "value": "Meetdown Auto Scale Settings"
+    },
+    "meetdown_trafficmanagerprofiles_events_api_tmgr_name": {
+      "value": "meetdown-events-api-tmgr-stg"
+    },
+    "meetdown_databases_events_sqldb_name": {
+      "value": "meetdown-events-sqldb-stg"
+    },
+    "firewallrules_allowallwindowsazureips_name": {
+      "value": "AllowAllWindowsAzureIps"
+    },
+    "firewallrules_clientipaddress_2017_8_5_15_40_39_name": {
+      "value": "ClientIPAddress_2017-8-5_15-40-39"
+    },
+    "meetdown_hostnamebindings_events_api_tmgr.trafficmanager.net_name": {
+      "value": "meetdown-events-api-tmgr-stg.trafficmanager.net"
+    },
+    "meetdown_hostnamebindings_events_api_westeu.azurewebsites.net_name": {
+      "value": "meetdown-events-api-stg-westeu.azurewebsites.net"
+    },
+    "meetdown_hostnamebindings_events_api_eastus.azurewebsites.net_name": {
+      "value": "meetdown-events-api-stg-eastus.azurewebsites.net"
+    }
+  }
+}

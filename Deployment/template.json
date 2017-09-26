@@ -1,0 +1,763 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "sqlserver_admin_username": {
+      "defaultValue": "SQLSERVERADMINUSERNAME",
+      "type": "String"
+    },
+    "sqlserver_admin_password": {
+      "defaultValue": "SQLSERVERADMINPASSWORD",
+      "type": "String"
+    },
+    "sqldb_username": {
+      "defaultValue": "SQLDBUSERNAME",
+      "type": "String"
+    },
+    "sqldb_password": {
+      "defaultValue": "SQLDBPASSWORD",
+      "type": "String"
+    },
+    "meetdown_redis_eastus_name": {
+      "defaultValue": "meetdown-eastus-redis",
+      "type": "String"
+    },
+    "meetdown_serverfarms_serviceplan_westeu_name": {
+      "defaultValue": "meetdown-westeu-svcplan",
+      "type": "String"
+    },
+    "meetdown_serverfarms_serviceplan_eastus_name": {
+      "defaultValue": "meetdown-eastus-svcplan",
+      "type": "String"
+    },
+    "meetdown_servers_sqlserver_eastus_name": {
+      "defaultValue": "meetdown-eastus-sqlserver",
+      "type": "String"
+    },
+    "meetdown_vaults_keyvault_eastus_name": {
+      "defaultValue": "meetdown-eastus-keyvault",
+      "type": "String"
+    },
+    "meetdown_sites_events_api_westeu_name": {
+      "defaultValue": "meetdown-westeu-events-api",
+      "type": "String"
+    },
+    "meetdown_sites_events_api_eastus_name": {
+      "defaultValue": "meetdown-eastus-events-api",
+      "type": "String"
+    },
+    "meetdown_autoscalesettings_name": {
+      "defaultValue": "Meetdown Auto Scale Settings",
+      "type": "String"
+    },
+    "meetdown_trafficmanagerprofiles_events_api_tmgr_name": {
+      "defaultValue": "meetdown-events-api-dev-tmgr",
+      "type": "String"
+    },
+    "meetdown_databases_events_sqldb_name": {
+      "defaultValue": "meetdown-events-sqldb",
+      "type": "String"
+    },
+    "firewallrules_allowallwindowsazureips_name": {
+      "defaultValue": "AllowAllWindowsAzureIps",
+      "type": "String"
+    },
+    "firewallrules_clientipaddress_2017_8_5_15_40_39_name": {
+      "defaultValue": "ClientIPAddress_2017-8-5_15-40-39",
+      "type": "String"
+    },
+    "meetdown_hostnamebindings_events_api_tmgr.trafficmanager.net_name": {
+      "defaultValue": "meetdown-events-api-tmgr.trafficmanager.net",
+      "type": "String"
+    },
+    "meetdown_hostnamebindings_events_api_westeu.azurewebsites.net_name": {
+      "defaultValue": "meetdown-westeu-events-api.azurewebsites.net",
+      "type": "String"
+    },
+    "meetdown_hostnamebindings_events_api_eastus.azurewebsites.net_name": {
+      "defaultValue": "meetdown-eastus-events-api.azurewebsites.net",
+      "type": "String"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.Cache/Redis",
+      "name": "[parameters('meetdown_redis_eastus_name')]",
+      "apiVersion": "2016-04-01",
+      "location": "East US",
+      "tags": {},
+      "scale": null,
+      "properties": {
+        "redisVersion": "3.2.7",
+        "sku": {
+          "name": "Standard",
+          "family": "C",
+          "capacity": 0
+        },
+        "enableNonSslPort": false,
+        "redisConfiguration": {
+          "maxclients": "256",
+          "maxmemory-reserved": "2",
+          "maxfragmentationmemory-reserved": "12",
+          "maxmemory-delta": "2"
+        }
+      },
+      "dependsOn": []
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults",
+      "name": "[parameters('meetdown_vaults_keyvault_eastus_name')]",
+      "apiVersion": "2015-06-01",
+      "location": "eastus",
+      "tags": {},
+      "scale": null,
+      "properties": {
+        "sku": {
+          "family": "A",
+          "name": "Standard"
+        },
+        "tenantId": "e288da14-e48b-45fa-8353-3ed989379bf6",
+        "accessPolicies": [
+          {
+            "tenantId": "e288da14-e48b-45fa-8353-3ed989379bf6",
+            "objectId": "959fdc06-5811-4c1b-91b1-87ed20b3cf0c",
+            "permissions": {
+              "keys": [
+                "Get",
+                "List",
+                "Update",
+                "Create",
+                "Import",
+                "Delete",
+                "Recover",
+                "Backup",
+                "Restore"
+              ],
+              "secrets": [
+                "Get",
+                "List",
+                "Set",
+                "Delete",
+                "Recover",
+                "Backup",
+                "Restore"
+              ]
+            }
+          }
+        ],
+        "enabledForDeployment": false
+      },
+      "dependsOn": []
+    },
+    //{
+    //  "type": "Microsoft.Network/trafficManagerProfiles",
+    //  "name": "[parameters('meetdown_trafficmanagerprofiles_events_api_tmgr_name')]",
+    //  "apiVersion": "2017-05-01",
+    //  "location": "global",
+    //  "tags": {},
+    //  "scale": null,
+    //  "properties": {
+    //    "profileStatus": "Enabled",
+    //    "trafficRoutingMethod": "Performance",
+    //    "dnsConfig": {
+    //      "relativeName": "[parameters('meetdown_trafficmanagerprofiles_events_api_tmgr_name')]",
+    //      "fqdn": "[concat(parameters('meetdown_trafficmanagerprofiles_events_api_tmgr_name'),'.trafficmanager.net')]",
+    //      "ttl": 300
+    //    },
+    //    "monitorConfig": {
+    //      "protocol": "HTTP",
+    //      "port": 80,
+    //      "path": "/api/health",
+    //      "intervalInSeconds": 30,
+    //      "toleratedNumberOfFailures": 3,
+    //      "timeoutInSeconds": 10
+    //    },
+    //    "endpoints": [
+    //      {
+    //        "name": "[parameters('meetdown_sites_events_api_eastus_name')]",
+    //        "type": "Microsoft.Network/trafficManagerProfiles/azureEndpoints",
+    //        "properties": {
+    //          "endpointStatus": "Enabled",
+    //          "targetResourceId": "[resourceId('Microsoft.Web/sites', parameters('meetdown_sites_events_api_eastus_name'))]",
+    //          "target": [ "concat(parameters('meetdown_sites_events_api_eastus_name')", "'.azurewebsites.net')" ],
+    //          "weight": 1,
+    //          "priority": 1,
+    //          "endpointLocation": "East US"
+    //        }
+    //      },
+    //      {
+    //        "name": "[parameters('meetdown_sites_events_api_westeu_name')]",
+    //        "type": "Microsoft.Network/trafficManagerProfiles/azureEndpoints",
+    //        "properties": {
+    //          "endpointStatus": "Enabled",
+    //          "targetResourceId": "[resourceId('Microsoft.Web/sites', parameters('meetdown_sites_events_api_westeu_name'))]",
+    //          "target": [ "concat(parameters('meetdown_sites_events_api_westeu_name')", "'.azurewebsites.net')" ],
+    //          "weight": 1,
+    //          "priority": 2,
+    //          "endpointLocation": "West Europe"
+    //        }
+    //      }
+    //    ]
+    //  },
+    //  "dependsOn": [
+    //    "[resourceId('Microsoft.Web/sites', parameters('meetdown_sites_events_api_eastus_name'))]",
+    //    "[resourceId('Microsoft.Web/sites', parameters('meetdown_sites_events_api_westeu_name'))]"
+    //  ]
+    //},
+    {
+      "type": "Microsoft.Sql/servers",
+      "kind": "v12.0",
+      "name": "[parameters('meetdown_servers_sqlserver_eastus_name')]",
+      "apiVersion": "2014-04-01-preview",
+      "location": "East US",
+      "scale": null,
+      "properties": {
+        "administratorLogin": "[parameters('sqlserver-admin-username')]",
+        "administratorLoginPassword": "[parameters('sqlserver-admin-password')]",
+        "version": "12.0"
+      },
+      "dependsOn": []
+    },
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "sku": {
+        "name": "S1",
+        "tier": "Standard",
+        "size": "S1",
+        "family": "S",
+        "capacity": 1
+      },
+      "kind": "app",
+      "name": "[parameters('meetdown_serverfarms_serviceplan_westeu_name')]",
+      "apiVersion": "2016-09-01",
+      "location": "West Europe",
+      "scale": null,
+      "properties": {
+        "name": "[parameters('meetdown_serverfarms_serviceplan_westeu_name')]",
+        "workerTierName": null,
+        "adminSiteName": null,
+        "hostingEnvironmentProfile": null,
+        "perSiteScaling": false,
+        "reserved": false,
+        "targetWorkerCount": 0,
+        "targetWorkerSizeId": 0
+      },
+      "dependsOn": []
+    },
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "sku": {
+        "name": "S1",
+        "tier": "Standard",
+        "size": "S1",
+        "family": "S",
+        "capacity": 1
+      },
+      "kind": "app",
+      "name": "[parameters('meetdown_serverfarms_serviceplan_eastus_name')]",
+      "apiVersion": "2016-09-01",
+      "location": "East US",
+      "scale": null,
+      "properties": {
+        "name": "[parameters('meetdown_serverfarms_serviceplan_eastus_name')]",
+        "workerTierName": null,
+        "adminSiteName": null,
+        "hostingEnvironmentProfile": null,
+        "perSiteScaling": false,
+        "reserved": false,
+        "targetWorkerCount": 0,
+        "targetWorkerSizeId": 0
+      },
+      "dependsOn": []
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "kind": "api",
+      "name": "[parameters('meetdown_sites_events_api_westeu_name')]",
+      "apiVersion": "2016-08-01",
+      "location": "West Europe",
+      "tags": {
+        "hidden-related:/subscriptions/a870ae97-a124-4457-be8d-709533d1cdc5/resourcegroups/meetdown-rg/providers/Microsoft.Web/serverfarms/meetdown-westeu-sp": "empty"
+      },
+      "scale": null,
+      "properties": {
+        "enabled": true,
+        "hostNameSslStates": [
+          {
+            "name": "meetdown-events-api-dev-tmgr.trafficmanager.net",
+            "sslState": "Disabled",
+            "virtualIP": null,
+            "thumbprint": null,
+            "toUpdate": null,
+            "hostType": "Standard"
+          },
+          {
+            "name": "[concat(parameters('meetdown_sites_events_api_westeu_name'),'.azurewebsites.net')]",
+            "sslState": "Disabled",
+            "virtualIP": null,
+            "thumbprint": null,
+            "toUpdate": null,
+            "hostType": "Standard"
+          },
+          {
+            "name": "[concat(parameters('meetdown_sites_events_api_westeu_name'),'.scm.azurewebsites.net')]",
+            "sslState": "Disabled",
+            "virtualIP": null,
+            "thumbprint": null,
+            "toUpdate": null,
+            "hostType": "Repository"
+          }
+        ],
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('meetdown_serverfarms_serviceplan_westeu_name'))]",
+        "reserved": false,
+        "siteConfig": null,
+        "scmSiteAlsoStopped": false,
+        "hostingEnvironmentProfile": null,
+        "clientAffinityEnabled": true,
+        "clientCertEnabled": false,
+        "hostNamesDisabled": false,
+        "containerSize": 0,
+        "dailyMemoryTimeQuota": 0,
+        "cloningInfo": null
+      },
+      "resources": [
+        {
+          "type": "config",
+          "name": "web",
+          "apiVersion": "2016-08-01",
+          "location": "West Europe",
+          "tags": {
+            "hidden-related:/subscriptions/a870ae97-a124-4457-be8d-709533d1cdc5/resourcegroups/meetdown-rg/providers/Microsoft.Web/serverfarms/meetdown-westeu-sp": "empty"
+          },
+          "scale": null,
+          "properties": {
+            "numberOfWorkers": 1,
+            "defaultDocuments": [
+              "Default.htm",
+              "Default.html",
+              "Default.asp",
+              "index.htm",
+              "index.html",
+              "iisstart.htm",
+              "default.aspx",
+              "index.php",
+              "hostingstart.html"
+            ],
+            "netFrameworkVersion": "v4.0",
+            "phpVersion": "5.6",
+            "pythonVersion": "",
+            "nodeVersion": "",
+            "linuxFxVersion": "",
+            "requestTracingEnabled": false,
+            "remoteDebuggingEnabled": false,
+            "remoteDebuggingVersion": "VS2017",
+            "httpLoggingEnabled": false,
+            "logsDirectorySizeLimit": 35,
+            "detailedErrorLoggingEnabled": false,
+            "publishingUsername": "$meetdown-events-westeu-dev-api",
+            "publishingPassword": null,
+            "appSettings": null,
+            "metadata": null,
+            "connectionStrings": null,
+            "machineKey": null,
+            "handlerMappings": null,
+            "documentRoot": null,
+            "scmType": "None",
+            "use32BitWorkerProcess": true,
+            "webSocketsEnabled": false,
+            "alwaysOn": false,
+            "javaVersion": null,
+            "javaContainer": null,
+            "javaContainerVersion": null,
+            "appCommandLine": "",
+            "managedPipelineMode": "Integrated",
+            "virtualApplications": [
+              {
+                "virtualPath": "/",
+                "physicalPath": "site\\wwwroot",
+                "preloadEnabled": false,
+                "virtualDirectories": null
+              }
+            ],
+            "winAuthAdminState": 0,
+            "winAuthTenantState": 0,
+            "customAppPoolIdentityAdminState": false,
+            "customAppPoolIdentityTenantState": false,
+            "runtimeADUser": null,
+            "runtimeADUserPassword": null,
+            "loadBalancing": "LeastRequests",
+            "routingRules": [],
+            "experiments": {
+              "rampUpRules": []
+            },
+            "limits": null,
+            "autoHealEnabled": false,
+            "autoHealRules": {
+              "triggers": null,
+              "actions": null
+            },
+            "tracingOptions": null,
+            "vnetName": "",
+            "siteAuthEnabled": false,
+            "siteAuthSettings": {
+              "enabled": null,
+              "unauthenticatedClientAction": null,
+              "tokenStoreEnabled": null,
+              "allowedExternalRedirectUrls": null,
+              "defaultProvider": null,
+              "clientId": null,
+              "clientSecret": null,
+              "issuer": null,
+              "allowedAudiences": null,
+              "additionalLoginParams": null,
+              "isAadAutoProvisioned": false,
+              "googleClientId": null,
+              "googleClientSecret": null,
+              "googleOAuthScopes": null,
+              "facebookAppId": null,
+              "facebookAppSecret": null,
+              "facebookOAuthScopes": null,
+              "twitterConsumerKey": null,
+              "twitterConsumerSecret": null,
+              "microsoftAccountClientId": null,
+              "microsoftAccountClientSecret": null,
+              "microsoftAccountOAuthScopes": null
+            },
+            "cors": null,
+            "push": null,
+            "apiDefinition": null,
+            "autoSwapSlotName": null,
+            "localMySqlEnabled": false,
+            "ipSecurityRestrictions": null
+          },
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', parameters('meetdown_sites_events_api_westeu_name'))]"
+          ]
+        },
+        {
+          "type": "hostNameBindings",
+          "name": "[parameters('meetdown_hostnamebindings_events_api_westeu.azurewebsites.net_name')]",
+          "apiVersion": "2016-08-01",
+          "location": "West Europe",
+          "scale": null,
+          "properties": {
+            "siteName": "[parameters('meetdown_sites_events_api_westeu_name')]",
+            "domainId": null,
+            "hostNameType": "Verified"
+          },
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', parameters('meetdown_sites_events_api_westeu_name'))]"
+          ]
+        }//,
+        //{
+        //  "type": "hostNameBindings",
+        //  "name": "[parameters('meetdown_hostnamebindings_events_api_tmgr.trafficmanager.net_name')]",
+        //  "apiVersion": "2016-08-01",
+        //  "location": "West Europe",
+        //  "scale": null,
+        //  "properties": {
+        //    "siteName": "[parameters('meetdown_sites_events_api_westeu_name')]",
+        //    "domainId": null,
+        //    "hostNameType": "Verified"
+        //  },
+        //  "dependsOn": [
+        //    "[resourceId('Microsoft.Web/sites', parameters('meetdown_sites_events_api_westeu_name'))]"
+        //  ]
+        //}
+      ],
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', parameters('meetdown_serverfarms_serviceplan_westeu_name'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "kind": "api",
+      "name": "[parameters('meetdown_sites_events_api_eastus_name')]",
+      "apiVersion": "2016-08-01",
+      "location": "East US",
+      "tags": {
+        "hidden-related:/subscriptions/a870ae97-a124-4457-be8d-709533d1cdc5/resourcegroups/meetdown-rg/providers/Microsoft.Web/serverfarms/meetdown-eastus-sp": "empty"
+      },
+      "scale": null,
+      "properties": {
+        "enabled": true,
+        "hostNameSslStates": [
+          {
+            "name": "meetdown-events-api-dev-tmgr.trafficmanager.net",
+            "sslState": "Disabled",
+            "virtualIP": null,
+            "thumbprint": null,
+            "toUpdate": null,
+            "hostType": "Standard"
+          },
+          {
+            "name": "[concat(parameters('meetdown_sites_events_api_eastus_name'),'.azurewebsites.net')]",
+            "sslState": "Disabled",
+            "virtualIP": null,
+            "thumbprint": null,
+            "toUpdate": null,
+            "hostType": "Standard"
+          },
+          {
+            "name": "[concat(parameters('meetdown_sites_events_api_eastus_name'),'.scm.azurewebsites.net')]",
+            "sslState": "Disabled",
+            "virtualIP": null,
+            "thumbprint": null,
+            "toUpdate": null,
+            "hostType": "Repository"
+          }
+        ],
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('meetdown_serverfarms_serviceplan_eastus_name'))]",
+        "reserved": false,
+        "siteConfig": null,
+        "scmSiteAlsoStopped": false,
+        "hostingEnvironmentProfile": null,
+        "clientAffinityEnabled": true,
+        "clientCertEnabled": false,
+        "hostNamesDisabled": false,
+        "containerSize": 0,
+        "dailyMemoryTimeQuota": 0,
+        "cloningInfo": null
+      },
+      "resources": [
+        {
+          "type": "config",
+          "name": "web",
+          "apiVersion": "2016-08-01",
+          "location": "East US",
+          "tags": {
+            "hidden-related:/subscriptions/a870ae97-a124-4457-be8d-709533d1cdc5/resourcegroups/meetdown-rg/providers/Microsoft.Web/serverfarms/meetdown-eastus-sp": "empty"
+          },
+          "scale": null,
+          "properties": {
+            "numberOfWorkers": 1,
+            "defaultDocuments": [
+              "Default.htm",
+              "Default.html",
+              "Default.asp",
+              "index.htm",
+              "index.html",
+              "iisstart.htm",
+              "default.aspx",
+              "index.php",
+              "hostingstart.html"
+            ],
+            "netFrameworkVersion": "v4.0",
+            "phpVersion": "5.6",
+            "pythonVersion": "",
+            "nodeVersion": "",
+            "linuxFxVersion": "",
+            "requestTracingEnabled": false,
+            "remoteDebuggingEnabled": false,
+            "remoteDebuggingVersion": "VS2012",
+            "httpLoggingEnabled": false,
+            "logsDirectorySizeLimit": 35,
+            "detailedErrorLoggingEnabled": false,
+            "publishingUsername": "$meetdown-events-eastus-dev-api",
+            "publishingPassword": null,
+            "appSettings": null,
+            "metadata": null,
+            "connectionStrings": null,
+            "machineKey": null,
+            "handlerMappings": null,
+            "documentRoot": null,
+            "scmType": "None",
+            "use32BitWorkerProcess": true,
+            "webSocketsEnabled": false,
+            "alwaysOn": false,
+            "javaVersion": null,
+            "javaContainer": null,
+            "javaContainerVersion": null,
+            "appCommandLine": "",
+            "managedPipelineMode": "Integrated",
+            "virtualApplications": [
+              {
+                "virtualPath": "/",
+                "physicalPath": "site\\wwwroot",
+                "preloadEnabled": false,
+                "virtualDirectories": null
+              }
+            ],
+            "winAuthAdminState": 0,
+            "winAuthTenantState": 0,
+            "customAppPoolIdentityAdminState": false,
+            "customAppPoolIdentityTenantState": false,
+            "runtimeADUser": null,
+            "runtimeADUserPassword": null,
+            "loadBalancing": "LeastRequests",
+            "routingRules": [],
+            "experiments": {
+              "rampUpRules": []
+            },
+            "limits": null,
+            "autoHealEnabled": false,
+            "autoHealRules": {
+              "triggers": null,
+              "actions": null
+            },
+            "tracingOptions": null,
+            "vnetName": "",
+            "siteAuthEnabled": false,
+            "siteAuthSettings": {
+              "enabled": null,
+              "unauthenticatedClientAction": null,
+              "tokenStoreEnabled": null,
+              "allowedExternalRedirectUrls": null,
+              "defaultProvider": null,
+              "clientId": null,
+              "clientSecret": null,
+              "issuer": null,
+              "allowedAudiences": null,
+              "additionalLoginParams": null,
+              "isAadAutoProvisioned": false,
+              "googleClientId": null,
+              "googleClientSecret": null,
+              "googleOAuthScopes": null,
+              "facebookAppId": null,
+              "facebookAppSecret": null,
+              "facebookOAuthScopes": null,
+              "twitterConsumerKey": null,
+              "twitterConsumerSecret": null,
+              "microsoftAccountClientId": null,
+              "microsoftAccountClientSecret": null,
+              "microsoftAccountOAuthScopes": null
+            },
+            "cors": null,
+            "push": null,
+            "apiDefinition": null,
+            "autoSwapSlotName": null,
+            "localMySqlEnabled": false,
+            "ipSecurityRestrictions": null
+          },
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', parameters('meetdown_sites_events_api_eastus_name'))]"
+          ]
+        },
+        {
+          "type": "hostNameBindings",
+          "name": "[parameters('meetdown_hostnamebindings_events_api_eastus.azurewebsites.net_name')]",
+          "apiVersion": "2016-08-01",
+          "location": "East US",
+          "scale": null,
+          "properties": {
+            "siteName": "[parameters('meetdown_sites_events_api_eastus_name')]",
+            "domainId": null,
+            "hostNameType": "Verified"
+          },
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', parameters('meetdown_sites_events_api_eastus_name'))]"
+          ]
+        }//,
+        //{
+        //  "type": "hostNameBindings",
+        //  "name": "[parameters('meetdown_hostnamebindings_events_api_tmgr.trafficmanager.net_name')]",
+        //  "apiVersion": "2016-08-01",
+        //  "location": "East US",
+        //  "scale": null,
+        //  "properties": {
+        //    "siteName": "[parameters('meetdown_sites_events_api_eastus_name')]",
+        //    "domainId": null,
+        //    "hostNameType": "Verified"
+        //  },
+        //  "dependsOn": [
+        //    "[resourceId('Microsoft.Web/sites', parameters('meetdown_sites_events_api_eastus_name'))]"
+        //  ]
+        //}
+      ],
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', parameters('meetdown_serverfarms_serviceplan_eastus_name'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Sql/servers/databases",
+      "kind": "v12.0,system",
+      "name": "[concat(parameters('meetdown_servers_sqlserver_eastus_name'), '/master')]",
+      "apiVersion": "2014-04-01-preview",
+      "location": "East US",
+      "scale": null,
+      "properties": {
+        //"databaseId": "c378b632-4543-4617-860c-a94be9cf2f4b",
+        "edition": "System",
+        "status": "Online",
+        "serviceLevelObjective": "System2",
+        "collation": "SQL_Latin1_General_CP1_CI_AS",
+        "maxSizeBytes": "32212254720",
+        "creationDate": "2017-09-22T20:06:28.287Z",
+        "currentServiceObjectiveId": "620323bf-2879-4807-b30d-c2e6d7b3b3aa",
+        "requestedServiceObjectiveId": "620323bf-2879-4807-b30d-c2e6d7b3b3aa",
+        "requestedServiceObjectiveName": "System2",
+        "sampleName": null,
+        "defaultSecondaryLocation": "West US",
+        "earliestRestoreDate": null,
+        "elasticPoolName": null,
+        "containmentState": 2,
+        "readScale": "Disabled",
+        "failoverGroupId": null
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('meetdown_servers_sqlserver_eastus_name'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Sql/servers/databases",
+      "kind": "v12.0,user",
+      "name": "[concat(parameters('meetdown_servers_sqlserver_eastus_name'), '/', parameters('meetdown_databases_events_sqldb_name'))]",
+      "apiVersion": "2014-04-01-preview",
+      "location": "East US",
+      "scale": null,
+      "properties": {
+        "databaseId": "111bfaf9-8726-44c5-9399-1354e1d7e052",
+        "edition": "Standard",
+        "status": "Online",
+        "serviceLevelObjective": "S3",
+        "collation": "SQL_Latin1_General_CP1_CI_AS",
+        "maxSizeBytes": "268435456000",
+        "creationDate": "2017-09-22T20:07:26.693Z",
+        "currentServiceObjectiveId": "789681b8-ca10-4eb0-bdf2-e0b050601b40",
+        "requestedServiceObjectiveId": "789681b8-ca10-4eb0-bdf2-e0b050601b40",
+        "requestedServiceObjectiveName": "S3",
+        "sampleName": null,
+        "defaultSecondaryLocation": "West US",
+        "earliestRestoreDate": "2017-09-22T20:18:11.337Z",
+        "elasticPoolName": null,
+        "containmentState": 2,
+        "readScale": "Disabled",
+        "failoverGroupId": null
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('meetdown_servers_sqlserver_eastus_name'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Sql/servers/firewallRules",
+      "kind": "v12.0",
+      "name": "[concat(parameters('meetdown_servers_sqlserver_eastus_name'), '/', parameters('firewallrules_allowallwindowsazureips_name'))]",
+      "apiVersion": "2014-04-01-preview",
+      "location": "East US",
+      "scale": null,
+      "properties": {
+        "startIpAddress": "0.0.0.0",
+        "endIpAddress": "0.0.0.0"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('meetdown_servers_sqlserver_eastus_name'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Sql/servers/firewallRules",
+      "kind": "v12.0",
+      "name": "[concat(parameters('meetdown_servers_sqlserver_eastus_name'), '/', parameters('firewallrules_clientipaddress_2017_8_5_15_40_39_name'))]",
+      "apiVersion": "2014-04-01-preview",
+      "location": "East US",
+      "scale": null,
+      "properties": {
+        "startIpAddress": "38.98.148.66",
+        "endIpAddress": "38.98.148.66"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('meetdown_servers_sqlserver_eastus_name'))]"
+      ]
+    }    
+  ]
+}
