@@ -1,7 +1,19 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
-  "parameters": {    
+  "parameters": {
+    "meetdown_sqlserver_admin_username": {
+      "value": "your_username"
+    },
+    "meetdown_sqlserver_admin_password": {
+      "value": "your_password"
+    },
+    "meetdown_sql_db_username": {
+      "value": "your_username"
+    },
+    "meetdown_sql_db_password": {
+      "value": "your_password"
+    },
     "meetdown_redis_eastus_name": {
       "value": "meetdown-redis-stg-eastus"
     },
@@ -13,9 +25,6 @@
     },
     "meetdown_servers_sqlserver_eastus_name": {
       "value": "meetdown-sqlserver-stg-eastus"
-    },
-    "meetdown_vaults_keyvault_eastus_name": {
-      "value": "meetdown-kv-stg-eastus"
     },
     "meetdown_sites_events_api_westeu_name": {
       "value": "meetdown-events-api-stg-westeu"
@@ -30,7 +39,7 @@
       "value": "meetdown-events-api-tmgr-stg"
     },
     "meetdown_databases_events_sqldb_name": {
-      "value": "meetdown-events-sqldb-stg"
+      "value": "meetdown-events-sqldb"
     },
     "firewallrules_allowallwindowsazureips_name": {
       "value": "AllowAllWindowsAzureIps"

@@ -1,29 +1,3 @@
-<#
- .SYNOPSIS
-    Deploys a template to Azure
-
- .DESCRIPTION
-    Deploys an Azure Resource Manager template
-
- .PARAMETER subscriptionId
-    The subscription id where the template will be deployed.
-
- .PARAMETER resourceGroupName
-    The resource group where the template will be deployed. Can be the name of an existing or a new resource group.
-
- .PARAMETER resourceGroupLocation
-    Optional, a resource group location. If specified, will try to create a new resource group in this location. If not specified, assumes resource group is existing.
-
- .PARAMETER deploymentName
-    The deployment name.
-
- .PARAMETER templateFilePath
-    Optional, path to the template file. Defaults to template.json.
-
- .PARAMETER parametersFilePath
-    Optional, path to the parameters file. Defaults to parameters.json. If file is not found, will prompt for parameter values based on template.
-#>
-
 param(
  [Parameter(Mandatory=$True)]
  [string]
@@ -37,33 +11,14 @@ param(
  [string]
  $resourceGroupLocation,
 
- [Parameter(Mandatory=$True)]
- [string]
- $sqlServerAdminUserName,
-
- [Parameter(Mandatory=$True)]
- [string]
- $sqlServerAdminPassword,
- 
- [Parameter(Mandatory=$True)]
- [string]
- $sqlDbUserName,
- 
- [Parameter(Mandatory=$True)]
- [string]
- $sqlDbPassword,
-
  [string]
  $templateFilePath = "template.json",
 
- [string]
- $parametersFilePath = "parameters.staging.json"
+ [Parameter(Mandatory=$True)]
+[string]
+ $parametersFilePath
 )
 
-<#
-.SYNOPSIS
-    Registers RPs
-#>
 Function RegisterRP {
     Param(
         [string]$ResourceProviderNamespace
@@ -111,13 +66,10 @@ else{
     Write-Host "Using existing resource group '$resourceGroupName'";
 }
 
-# create inline parameters hashtable
-$templateParameterObject = @{ "sqlserver_admin_username" = $sqlServerAdminUserName; "sqlserver_admin_password" = $sqlServerAdminPassword; "sqldb_username" = $sqlDbUserName; "sqldb_password" = $sqlDbPassword}
-
 # Start the deployment
 Write-Host "Starting deployment...";
 if(Test-Path $parametersFilePath) {
-    New-AzureRmResourceGroupDeployment -ResourceGroupName $resourceGroupName -TemplateFile $templateFilePath -TemplateParameterFile $parametersFilePath -TemplateParameterObject $templateParameterObject;
+    New-AzureRmResourceGroupDeployment -ResourceGroupName $resourceGroupName -TemplateFile $templateFilePath -TemplateParameterFile $parametersFilePath;
 } else {
-New-AzureRmResourceGroupDeployment -ResourceGroupName $resourceGroupName -TemplateFile $templateFilePath -TemplateParameterObject $templateParameterObject;
+	New-AzureRmResourceGroupDeployment -ResourceGroupName $resourceGroupName -TemplateFile $templateFilePath;
 }

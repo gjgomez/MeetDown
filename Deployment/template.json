@@ -2,20 +2,20 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "sqlserver_admin_username": {
-      "defaultValue": "SQLSERVERADMINUSERNAME",
+    "meetdown_sqlserver_admin_username": {
+      "defaultValue": "your_username",
       "type": "String"
     },
-    "sqlserver_admin_password": {
-      "defaultValue": "SQLSERVERADMINPASSWORD",
+    "meetdown_sqlserver_admin_password": {
+      "defaultValue": "your_password",
       "type": "String"
     },
-    "sqldb_username": {
-      "defaultValue": "SQLDBUSERNAME",
+    "meetdown_sql_db_username": {
+      "defaultValue": "your_username",
       "type": "String"
     },
-    "sqldb_password": {
-      "defaultValue": "SQLDBPASSWORD",
+    "meetdown_sql_db_password": {
+      "defaultValue": "your_password",
       "type": "String"
     },
     "meetdown_redis_eastus_name": {
@@ -32,10 +32,6 @@
     },
     "meetdown_servers_sqlserver_eastus_name": {
       "defaultValue": "meetdown-eastus-sqlserver",
-      "type": "String"
-    },
-    "meetdown_vaults_keyvault_eastus_name": {
-      "defaultValue": "meetdown-eastus-keyvault",
       "type": "String"
     },
     "meetdown_sites_events_api_westeu_name": {
@@ -105,51 +101,6 @@
       },
       "dependsOn": []
     },
-    {
-      "type": "Microsoft.KeyVault/vaults",
-      "name": "[parameters('meetdown_vaults_keyvault_eastus_name')]",
-      "apiVersion": "2015-06-01",
-      "location": "eastus",
-      "tags": {},
-      "scale": null,
-      "properties": {
-        "sku": {
-          "family": "A",
-          "name": "Standard"
-        },
-        "tenantId": "e288da14-e48b-45fa-8353-3ed989379bf6",
-        "accessPolicies": [
-          {
-            "tenantId": "e288da14-e48b-45fa-8353-3ed989379bf6",
-            "objectId": "959fdc06-5811-4c1b-91b1-87ed20b3cf0c",
-            "permissions": {
-              "keys": [
-                "Get",
-                "List",
-                "Update",
-                "Create",
-                "Import",
-                "Delete",
-                "Recover",
-                "Backup",
-                "Restore"
-              ],
-              "secrets": [
-                "Get",
-                "List",
-                "Set",
-                "Delete",
-                "Recover",
-                "Backup",
-                "Restore"
-              ]
-            }
-          }
-        ],
-        "enabledForDeployment": false
-      },
-      "dependsOn": []
-    },
     //{
     //  "type": "Microsoft.Network/trafficManagerProfiles",
     //  "name": "[parameters('meetdown_trafficmanagerprofiles_events_api_tmgr_name')]",
@@ -213,8 +164,8 @@
       "location": "East US",
       "scale": null,
       "properties": {
-        "administratorLogin": "[parameters('sqlserver-admin-username')]",
-        "administratorLoginPassword": "[parameters('sqlserver-admin-password')]",
+        "administratorLogin": "[parameters('meetdown_sqlserver_admin_username')]",
+        "administratorLoginPassword": "[parameters('meetdown_sqlserver_admin_password')]",
         "version": "12.0"
       },
       "dependsOn": []
@@ -311,7 +262,15 @@
         ],
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('meetdown_serverfarms_serviceplan_westeu_name'))]",
         "reserved": false,
-        "siteConfig": null,
+        "siteConfig": {
+          "connectionStrings": [
+            {
+              "name": "DefaultConnection",
+              "connectionString": "[concat('Server=tcp:', parameters('meetdown_servers_sqlserver_eastus_name'),'.database.windows.net,1433;Initial Catalog=',parameters('meetdown_databases_events_sqldb_name'),';Persist Security Info=False;User ID=',parameters('meetdown_sql_db_username'),';Password=',parameters('meetdown_sql_db_password'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]",
+              "type": "SQLAzure"
+            }
+          ]
+        },
         "scmSiteAlsoStopped": false,
         "hostingEnvironmentProfile": null,
         "clientAffinityEnabled": true,
@@ -323,13 +282,25 @@
       },
       "resources": [
         {
+          "name": "appsettings",
+          "type": "config",
+          "location": "West Europe",
+          "apiVersion": "2016-08-01",
+          "properties": {
+            "WEBSITE_NODE_DEFAULT_VERSION": "6.9.1",
+            "DistributedCache:Redis:ConnectionString": "[concat(parameters('meetdown_redis_eastus_name'), '.windows.net:6380,password=[PASSWORD]=,ssl=True,abortConnect=False')]",
+            "DistributedCache:Enabled": "true",
+            "WEBSITE_HTTPLOGGING_RETENTION_DAYS": "5"
+          },
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', parameters('meetdown_sites_events_api_westeu_name'))]"
+          ]
+        },
+        {
           "type": "config",
           "name": "web",
           "apiVersion": "2016-08-01",
           "location": "West Europe",
-          "tags": {
-            "hidden-related:/subscriptions/a870ae97-a124-4457-be8d-709533d1cdc5/resourcegroups/meetdown-rg/providers/Microsoft.Web/serverfarms/meetdown-westeu-sp": "empty"
-          },
           "scale": null,
           "properties": {
             "numberOfWorkers": 1,
@@ -449,7 +420,7 @@
           "dependsOn": [
             "[resourceId('Microsoft.Web/sites', parameters('meetdown_sites_events_api_westeu_name'))]"
           ]
-        }//,
+        } //,
         //{
         //  "type": "hostNameBindings",
         //  "name": "[parameters('meetdown_hostnamebindings_events_api_tmgr.trafficmanager.net_name')]",
@@ -510,7 +481,15 @@
         ],
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('meetdown_serverfarms_serviceplan_eastus_name'))]",
         "reserved": false,
-        "siteConfig": null,
+        "siteConfig": {
+          "connectionStrings": [
+            {
+              "name": "DefaultConnection",
+              "connectionString": "[concat('Server=tcp:', parameters('meetdown_servers_sqlserver_eastus_name'),'.database.windows.net,1433;Initial Catalog=',parameters('meetdown_databases_events_sqldb_name'),';Persist Security Info=False;User ID=',parameters('meetdown_sql_db_username'),';Password=',parameters('meetdown_sql_db_password'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]",
+              "type": "SQLAzure"
+            }
+          ]
+        },
         "scmSiteAlsoStopped": false,
         "hostingEnvironmentProfile": null,
         "clientAffinityEnabled": true,
@@ -521,6 +500,21 @@
         "cloningInfo": null
       },
       "resources": [
+        {
+          "name": "appsettings",
+          "type": "config",
+          "location": "East US",
+          "apiVersion": "2016-08-01",
+          "properties": {
+            "WEBSITE_NODE_DEFAULT_VERSION": "6.9.1",
+            "DistributedCache:Redis:ConnectionString": "[concat(parameters('meetdown_redis_eastus_name'), '.windows.net:6380,password=[PASSWORD]=,ssl=True,abortConnect=False')]",
+            "DistributedCache:Enabled": "true",
+            "WEBSITE_HTTPLOGGING_RETENTION_DAYS": "5"
+          },
+          "dependsOn": [
+            "[resourceId('Microsoft.Web/sites', parameters('meetdown_sites_events_api_eastus_name'))]"
+          ]
+        },
         {
           "type": "config",
           "name": "web",
@@ -648,7 +642,7 @@
           "dependsOn": [
             "[resourceId('Microsoft.Web/sites', parameters('meetdown_sites_events_api_eastus_name'))]"
           ]
-        }//,
+        } //,
         //{
         //  "type": "hostNameBindings",
         //  "name": "[parameters('meetdown_hostnamebindings_events_api_tmgr.trafficmanager.net_name')]",
@@ -677,13 +671,11 @@
       "location": "East US",
       "scale": null,
       "properties": {
-        //"databaseId": "c378b632-4543-4617-860c-a94be9cf2f4b",
         "edition": "System",
         "status": "Online",
         "serviceLevelObjective": "System2",
         "collation": "SQL_Latin1_General_CP1_CI_AS",
         "maxSizeBytes": "32212254720",
-        "creationDate": "2017-09-22T20:06:28.287Z",
         "currentServiceObjectiveId": "620323bf-2879-4807-b30d-c2e6d7b3b3aa",
         "requestedServiceObjectiveId": "620323bf-2879-4807-b30d-c2e6d7b3b3aa",
         "requestedServiceObjectiveName": "System2",
@@ -707,13 +699,11 @@
       "location": "East US",
       "scale": null,
       "properties": {
-        "databaseId": "111bfaf9-8726-44c5-9399-1354e1d7e052",
         "edition": "Standard",
         "status": "Online",
         "serviceLevelObjective": "S3",
         "collation": "SQL_Latin1_General_CP1_CI_AS",
         "maxSizeBytes": "268435456000",
-        "creationDate": "2017-09-22T20:07:26.693Z",
         "currentServiceObjectiveId": "789681b8-ca10-4eb0-bdf2-e0b050601b40",
         "requestedServiceObjectiveId": "789681b8-ca10-4eb0-bdf2-e0b050601b40",
         "requestedServiceObjectiveName": "S3",
@@ -758,6 +748,6 @@
       "dependsOn": [
         "[resourceId('Microsoft.Sql/servers', parameters('meetdown_servers_sqlserver_eastus_name'))]"
       ]
-    }    
+    }
   ]
 }
